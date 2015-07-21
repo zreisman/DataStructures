@@ -71,11 +71,19 @@ class DynamicArray
     value
   end
 
+  def unshift(value)
+    if @length == @capacity
+      expand_array
+    end
+    @start = (@start - 1) % @capacity
+    @store.set(@start, value)
+    @length += 1
+  end
+
 
   private
 
   def add_stuff!(value)
-    # set(@length - 1, value)
     pos = (@start + @length) % @capacity
     @length += 1
     @store.set(pos, value)
@@ -84,6 +92,7 @@ class DynamicArray
 
   def expand_array
     @capacity *= 2
+
     new_store = StaticArray.new(@capacity)
     (0...@length).each {|i| new_store.set(i, get(i)) }
     @start = 0
