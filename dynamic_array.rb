@@ -1,23 +1,25 @@
+require 'byebug'
+
 class StaticArray
 
   def initialize(capacity = 4)
-    @capacity = capicity
+    @capacity = capacity
     @store = Array.new(@capacity)
   end
 
   def get(idx)
-    if idx < 0 || idx >= @length
+    if idx < 0 || idx >= @capacity
       return nil
     else
-      return @store.get(idx)
+      return @store[idx]
     end
   end
 
   def set(idx, value)
-    if idx < 0 || idx >= @length
+    if idx < 0 || idx >= @capacity
       return nil
     else
-      @store.set(idx, value)
+      @store[idx] = value
       return value
     end
   end
@@ -36,12 +38,12 @@ class DynamicArray
   end
 
   def get(idx)
-    return @store.get(ring_index(idx)) if inbounds?(idx)
+    return @store.get(ring_idx(idx)) if inbounds?(idx)
   end
 
   def set(idx, value)
     if inbounds?(idx)
-      @store.set(ring_index(idx), value)
+      @store.set(ring_idx(idx), value)
     end
   end
 
@@ -61,24 +63,30 @@ class DynamicArray
   end
 
   def shift
-    @start += 1
+    value = get(@start)
+    set(@start, nil)
     @length -= 1
-    get(@start - 1)
+    @start += 1
+
+    value
   end
-  
+
 
   private
 
   def add_stuff!(value)
-    @store.set(ring_index(@length), value)
+    # set(@length - 1, value)
+    pos = (@start + @length) % @capacity
     @length += 1
+    @store.set(pos, value)
+    value
   end
 
   def expand_array
     @capacity *= 2
     new_store = StaticArray.new(@capacity)
     (0...@length).each {|i| new_store.set(i, get(i)) }
-    @start_idx = 0
+    @start = 0
     @store = new_store
   end
 
@@ -87,7 +95,8 @@ class DynamicArray
   end
 
   def ring_idx(idx)
-    (idx + @start) % @length
+    return @start if @length <= 1
+    (@start + idx) % @length
   end
 
 end
