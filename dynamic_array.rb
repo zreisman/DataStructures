@@ -32,15 +32,16 @@ class DynamicArray
     @store = StaticArray.new(4)
     @capacity = 4
     @length = 0
+    @start = 0
   end
 
   def get(idx)
-    return @store.get(idx) if inbounds?(idx)
+    return @store.get(ring_index(idx)) if inbounds?(idx)
   end
 
   def set(idx, value)
     if inbounds?(idx)
-      @store.set(idx, value)
+      @store.set(ring_index(idx), value)
     end
   end
 
@@ -59,23 +60,34 @@ class DynamicArray
     get(@length)
   end
 
+  def shift
+    @start += 1
+    @length -= 1
+    get(@start - 1)
+  end
+  
 
   private
 
   def add_stuff!(value)
-    @store[@length] = value
+    @store.set(ring_index(@length), value)
     @length += 1
   end
 
   def expand_array
-    old_store = @store
     @capacity *= 2
-    @store = StaticArray.new(@capacity)
-    (0...@length).each {|i| @store.set(i, old_store.get(i)) }
+    new_store = StaticArray.new(@capacity)
+    (0...@length).each {|i| new_store.set(i, get(i)) }
+    @start_idx = 0
+    @store = new_store
   end
 
   def inbounds?(idx)
     return true if idx < @length && idx >= 0
+  end
+
+  def ring_idx(idx)
+    (idx + @start) % @length
   end
 
 end
