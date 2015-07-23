@@ -1,5 +1,3 @@
-require 'byebug'
-
 class StaticArray
 
   def initialize(capacity = 4)
